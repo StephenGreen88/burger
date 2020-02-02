@@ -1,31 +1,54 @@
-// Require in the necessary dependencies
-var orm = require("../config/orm.js");
+// Make sure we wait to attach our handlers until the DOM is fully loaded.
+(function () {
 
-var burger = {
-    // selectAll burgers
-    selectAll: function (cb) {
-        orm.selectAll("burgers", function (res) {
-            cb(res);
-        });
-    },
-    // insertOne burger into the db
-    insertOne: function (cols, vals, cb) {
-        orm.insertOne("burgers", cols, vals, function (res) {
-            cb(res);
-        });
-    },
-    // updateOne burger in the db
-    updateOne: function (objColVals, condition, cb) {
-        orm.updateOne("burgers", objColVals, condition, function (res) {
-            cb(res);
-        });
-    },
-    // deleteOne burger from the db
-    deleteOne: function (condition, cb) {
-        orm.deleteOne("burgers", condition, function (res) {
-            cb(res);
-        });
-    }
-};
+    // Add a new burger.
+    $(".create-form").on("submit", function (event) {
+        event.preventDefault();
 
-module.exports = burger;
+        var newBurger = {
+            burger_name: $("#newburger").val().trim(),
+            devoured: 0
+        };
+
+        // Send the POST request.
+        $.ajax("/api/burgers", {
+            type: "POST",
+            data: newBurger
+        }).then(function () {
+            console.log("Added new burger");
+            // Reload the page to get the updated burger list.
+            location.reload();
+        });
+    });
+
+    $(".eatburger").on("click", function (event) {
+        event.preventDefault();
+
+        var id = $(this).data("id");
+        var devouredState = {
+            devoured: 1
+        };
+
+        // Send the PUT request.
+        $.ajax("/api/burgers/" + id, {
+            type: "PUT",
+            data: devouredState
+        }).then(function () {
+            console.log("Burger devoured");
+            location.reload();
+        });
+    });
+
+    $(".trashburger").on("click", function (event) {
+        event.preventDefault();
+
+        var id = $(this).data("id");
+
+        // Send the DELETE request.
+        $.ajax({
+            type: "DELETE",
+            url: "/api/burgers/" + id
+        }).then(location.reload());
+    });
+
+})
